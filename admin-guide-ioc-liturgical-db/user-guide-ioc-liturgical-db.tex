@@ -1,0 +1,666 @@
+\documentclass[]{memoir}
+
+\usepackage{system/oslw-documentation}
+\usepackage[hyphenate]{system/ocmc-liturgical-text} 
+\usepackage[yyyymmdd,hhmmss]{datetime}
+
+\def\iocLDbName{International Orthodox Christian Liturgical Database }%
+
+\def\iocLDbAppName{International Orthodox Christian Liturgical Database Public App }%
+
+\def\iocWsName{International Orthodox Christian Liturgical Web Services }%
+
+\def\iocTmsName{International Orthodox Christian Translation Management System}
+
+\def\iocWsAdminName{ioc-liturgical-ws Administrator's App }%
+
+\def\iocReactName{International Orthodox Christian Liturgical React Components }%
+
+\def\iocLDb{ioc-liturgical-db }%
+
+\def\iocLDbApp{ioc-liturgical-db-public-app }%
+
+\def\iocWs{ioc-liturgical-ws }%
+
+\def\iocTms{ioc-tms }%
+
+\def\iocReact{ioc-liturgical-react }%
+
+\def\iocWsAdmin{ioc-liturgical-ws-admin-app }%
+
+%% Change next two lines if clone project
+\def\docTopic{\iocWs}
+
+\def\docTopicName{\iocWsName}
+
+\title{Contributer's Guide\\\bigskip
+
+\docTopicName\\   (\docTopic) \\\bigskip
+}
+\author{Michael Colburn\\Orthodox Christian Mission Center (OCMC)}
+
+\date{Version {\today} at {\currenttime}}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\vfill
+
+\pagebreak
+
+\chapter{Conventions Used in this Guide}
+
+\begin{boxed}
+When you see a box like this, with a blue key \color{blue}\faKey{}\color{black}, it indicates a key point.  That is, important information that will help you better understand or use the database.
+\end{boxed}
+When you see a box like the one below, it represents a command (terminal) window on a machine.  The text in the box is what you should type to execute a command.
+\begin{bash}
+\code{sudo neo4j start}
+\end{bash}
+\begin{warning}
+When you see a box like this, with a red exclamation mark in a triangle, it indicates a warning.  That is, important information that will help you avoid making a mistake in how you use the database.
+\end{warning}
+
+\chapter{Introduction}
+
+The \docTopic  is a joint project of AGES Initiatives, Inc. and the Orthodox Christian Mission Center (OCMC) on behalf of the international Orthodox Christian community. 
+
+The family of IOC-Liturgical-* web applications includes:
+
+\begin{itemize}
+    \item Databases (\iocLDbName)
+    \item Middleware (\iocWs)
+    \item Web apps
+        \begin{itemize}
+            \item Liturgical Database Search app (\iocLDbApp)
+            \item Translation Management System (\iocTms)
+            \item Web Service Administrator's app (\iocWsAdmin{})        \end{itemize}
+\end{itemize}
+
+The web apps reach the database indirectly, through the middleware, which provides a REST API, authentication, and authorization services.  
+
+\section{IOC Liturgical Database}
+The ioc-liturgical-db has several purposes:
+
+\begin{enumerate}
+    \item It is a database for applications that make use of the liturgical texts of the Eastern Orthodox Christian Church. It can be accessed by applications through a web service interface.  If authorized, it can also be copied into another database for use by an application.
+    \item It is a source of information for individuals who are studying the liturgical texts.  In addition to the original text and translations, it contains annotated information that helps researchers analyze the text.
+\end{enumerate}
+
+\begin{boxed}
+The primary purpose of the database is for software applications, not people.  Although people can benefit from using the database through its search feature, it is not structured to view like a liturgical book.  It is an application database.
+\end{boxed}
+
+\section{Security}
+
+The texts in the database are protected from authorized viewing and/or updating.  Texts are protected based on their domain (see below).
+
+All websites used in conjunction with the \iocLDb are protected by SSL and have ssl certificates to indicate the validity of the site from an Internet security perspective.  The use of SSL also means that when a user ID and password is provided for database access, the information is encrypted.
+
+\section{Licensing and Copyrights}
+
+All effort has been made to ensure that the texts in the databases are in compliance with licenses and copyrights of the holders.  When necessary, permission has been obtained from the owners.
+
+\section{Neo4j}
+
+The database management system (DBMS) used for the \iocLDb is from a company called Neo4j.  The DBMS is also called Neo4j. Neo4j is a graph database.
+
+\section{How to Access the Database}
+
+There are two official instances of the database.  One is read-only and open to the public.  The other may be updated by authorized users.  The public, read-only instance contains the current release of the database.  The updatable database is where changes are made and reviewed before being moved to the read-only version.
+
+The location of the read-only, public database is:
+
+\url{https://ioc-liturgical-db.org}
+
+The location of the private, updatable database is:
+
+\url{https://ioc-liturgical-db.net}
+
+Both databases provide a search function.  However, access to the updatable database requires a user account and authentication and authorization.
+
+\section{IOC-Liturgical-WS}
+
+The purpose of the ioc-liturgical-ws is to provide a REST API to the databases and to protect access via authentication and authorization services.  This means it is possible for us to switch out the back-end DBMS without affecting the web apps that use it.  However, we believe that Neo4j will be the back-end DBMS for many years due to its excellent features.  
+
+\subsection{Github Repository}
+
+The Github repository for the ioc-liturgical-db is located at \url{https://github.com/OCMC-Translation-Projects/ioc-liturgical-ws}.  For your work, you will Fork this repository into your personal space on Github, then clone it to your workspace, make changes, commit them back to the forked copy on Github, then create a pull request for us to merge it into the master at the OCMC repository.
+
+\subsection{Setting up in Eclipse}
+
+This assumes that you have installed Eclipse Neon on your workstation or laptop.  You need the version for Java developers.  You also need to have Java 8 installed on your machine.
+
+Once you have opened Eclipse, you can import the project from your local git repository.  The menu options in Eclipse are: File > import > Git > Projects from Git.
+
+\subsection{Running the Web Service}
+
+The main class for the service is ioc.liturgical.ws.app.ServiceProvider.
+
+The first time you start the web service, right click this file, and select Run As Java Application.
+
+The wsadmin is the root user of the web service.  It has all powers within the service. It uses the password that you provide as a parameter when you start the ServiceProvider.
+
+This means that you have to open the Run Configuration for ServiceProvider, click on the Arguments tab, and put your wsadmin password in there.  It will be reused whenever you start the web service.  It does not matter what you set it to.  In a production environment, it is set when ServiceProvider is called via the jar for the web service.
+
+\chapter{Using Trello}
+
+In Trello we have boards.  A board represents a system.  Within the board there are decks.  Decks have cards.  Each task, feature request, or problem report has a card.  The cards have identifiers, e.g. Problem-2017-003, the third problem report for the year 2017.
+
+\chapter{Using Git and Github}
+
+The Github repository for the ioc-liturgical-ws is located at:
+
+\url{https://github.com/OCMC-Translation-Projects/ioc-liturgical-ws}
+
+For the description in the sections below, we will use Problem-2017-003 as the example.
+
+Here are the basic steps:
+
+\begin{enumerate}
+    \item{Fork the project in Github}
+    \item{Clone the fork to your desktop}
+    \item{Make your changes}
+    \item{Commit your changes}
+    \item{Push your changes}
+    \item{Create a pull request}
+\end{enumerate}
+
+\section{Fork the Project}
+
+Got to Github and open the repository's main page.  There is  Fork button in the upper right of the page.  Click it and select where to fork to, which should be your personal Github account.
+
+\section{Clone the Fork to your Desktop}
+
+\begin{bash}
+\code{git clone \{url-to-forked-github\}}
+\end{bash}
+
+Note: see the section on Eclipse.
+
+\section{Committing your changes}
+
+\begin{bash}
+\code{git commit -a -m 'fixed the error [Problem-2017-003]'}
+\end{bash}
+
+The -a flag adds changes to files git is tracking.  If you have created a new file, you will have to tell git about it first.
+
+\section{Push the Change}
+
+\begin{bash}
+\code{git push origin}
+\end{bash}
+
+You can make as many commits and pushes as you want. 
+
+\section{Create a Pull Request}
+
+Go to your Github page for the forked repository, then click the button that says 'New pull request'.  
+
+After that, we will look at the request and determine what to do to merge it into the master.
+
+\chapter{Eclipse}
+
+Once you have cloned the forked repository (see above), you need to import it into Eclipse.
+
+Here are the steps:
+
+\begin{enumerate}
+    \item{Start Eclipse}
+    \item{When asked to select a workspace, create a new one.}
+    \item{Once Eclipse loads, you will see a welcome tab.  Close it.}
+    \item{Select File > Import > Maven > Existing Maven Projects > next.}
+    \item{Browse to and select the root directory, which is your git directory for the \iocWs}
+    \item{Check the box for pom.xlm}
+    \item{Click Refresh}
+    \item{Click Finish}
+\end{enumerate}
+
+\section{Configuration}
+
+After you have imported the project, you need to configure it to use the Reources folder.
+
+\begin{enumerate}
+    \item{Right-click the project (top-most entry in the Package Explorer}.
+    \item {Build Path > Configure Build Path}
+    \item{Click the Source button (towards the top of the popup)}
+    \item{Although there is an entry for liturgical-ws/src/main/resources, you need to remove it and re-add it as follows...}
+    \item{Select it}
+    \item{Click the Remove button}
+    \item{Click Add Folder...}
+    \item{Check the resources box in the section for src / main}
+    \item{Click OK}
+    \item{Click Apply}
+    \item{Click OK}
+\end{enumerate}
+
+\section{Running the Web Service}
+
+This section assumes that you have imported the project and have configured it as explained above.
+
+\begin{enumerate}
+    \item{In the package explorer, open the package named ioc.liturgical.ws.app}
+    \item{Right click ServiceProvider.java}
+    \item{Select Run as > Java application.}
+    \item{This first attempt will fail, but it will create a Run configuration for you.}
+    \item{Open Run > Run Configurations}
+    \item{Select the Arguments tab and enter as a program argument the password you will use for the wsadmin user.  This will also be used for the wsadmin user in Neo4j.}
+    \item{Click on Apply, then Run.}
+\end{enumerate}
+
+At this point the console should give various messages about the start up.  During the start up, at one point it will attempt to connect to the Neo4j database.  
+
+If all goes well, you will see this in the console:
+
+\code{[Thread-2] INFO spark.embeddedserver.jetty.EmbeddedJettyServer - == Spark has ignited ...}
+
+\code{
+[Thread-2] INFO spark.embeddedserver.jetty.EmbeddedJettyServer - >> Listening on 0.0.0.0:4567}
+
+\code{
+[Thread-2] INFO org.eclipse.jetty.server.Server - jetty-9.3.6.v20151106}
+
+\code{[Thread-2] INFO org.eclipse.jetty.server.ServerConnector - Started ServerConnector@625a3e6b {HTTP/1.1, [http/1.1]} {0.0.0.0:4567}}
+
+\code{[Thread-2] INFO org.eclipse.jetty.server.Server - Started @57474ms}
+
+Now you can open a web browser and enter:
+
+\code{http://localhost:4567}
+
+You will likely get a page not found at this point.  See the section about testing the REST API.  You will need to either add some front-end web apps, or use JUnit to do testing.
+
+\chapter{Setting Up a Test Database}
+
+There are two databases used by the web service.  One is an interal H2 database.  It stores the metadata for the web service as well as user accounts, authorizations, and other things. 
+
+The other database is the backend, Neo4j database.  It contains the liturgical and biblical texts.
+
+You do not need to configure the internal database.
+
+However, if you want to test using a backend Neo4j database, you will need to do the following:
+
+\begin{enumerate}
+    \item{Install the community edition of Neo4j.}
+    \item{Start the server, log in using the userid and password the server shows you.  You will have to create a new password.}
+    \item{Stop the server.}
+    \item{Neo4j will have created a set of directories.  Find the auth file, in a folder like this: /data/dbms/auth.}
+    \item{Open the file with a text editor and copy the entry for neo4j, and paste it back in the same file, after the first entry (that ends with a colon).  Change the username from neo4j to wsadmin.}
+    \item{If you want to use same password as the one you set neo4j to, then that is all you need to do.}
+    \item{If you want to use a different password, then after the final colon, add password\textunderscore change\textunderscore required}
+    \item{Save the file.}
+    \item{Restart Neo4j, login using wsadmin.}
+    \item{Stop neo4j.}
+    \item{Open the auth file again.  If you changed the password, it will have a different hash.}
+\end{enumerate}
+
+From this point on, use the wsadmin password to start the web service.  It must match the password for the wsadmin in Neo4j. All actions against the Neo4j database that are done through the web service use the wsadmin user.  It will only be used if the end-user has successfully authenticated to the web service and is authorized for the action he or she requests.
+
+\section{Loading the Database}
+
+If you are working on the part of the web service that reads and writes to the Neo4j database, you will need to load your local Neo4j with liturgical and biblical texts.  Ask Michael Colburn how to do this.
+
+\chapter{Testing the REST API}
+
+There are a number of ways to test the API. This chapter only describes two way: using a web app that knows how to talk to the web service, or running JUnit tests.
+
+\subsection{Using a Web App}
+
+Existing endpoints can be tested by putting some web apps in a folder, then telling \iocWs where to find them.  Here are the steps:
+
+\begin{enumerate}
+    \item{Somewhere on your computer, create a folder to put the web apps.  Do not have spaces in the folder names.  For example, on Windows: c:\textbackslash\textbackslash www\textbackslash ocmc}
+    \item{create a subfolder for each app you want to use.  Keep the name short.}
+    \item{Download the web apps you want to use, and unzip them into the folder you created for that app.  }
+    \item{In your Eclipse project, open the /liturgical-ws/src/main/resources/serviceProvider.config file.}
+    \item{Set the property staticExternalFileLocation= to the path to your web app folder.}
+    \item{Set the property useExternalFileLocation=true}
+\end{enumerate}
+
+You can only point to one of the apps at a time in your config file.
+
+Now, when you start the web service, you can get to the web app using \code{localhost:4567}.
+
+It will automatically load the app for you just from the domain and port.
+
+\section{Running JUnit Test Cases}
+
+To run the suite of JUnit test cases:
+
+\begin{enumerate}
+    \item{Open the serviceProvider.config file and set runningJUnitTests=true}
+    \item{Open the JUnit run configuration for the entire project, and check the box that says Run all tests in the selected project, and in the Environment tab, add a variabled named pwd and set the value to the password for wsadmin.}
+    \item{In the Eclipse package explorer, right-click the project name, and select Run as > JUnit test}
+    \item The JUnit tab will open up automatically next to the Package Explorer tab.  If all tests pass, you will see a green bar, and the error count and failures count will both be zero.
+    \item You will also see a list of test classes, and the test methods in each one.  You can right-click an individual class, or an individual method within it, then run or debug as a junit test.
+\end{enumerate}
+
+\chapter{Common Errors}
+
+This chapter provides information about commonly encountered errors and how to resolve them.
+
+\section{'folder' must not be null}
+
+\subsection{Description}
+This error occurs when you run ServiceProvider.  The exception dump indicates that the error is occurring in ServiceProvider.
+
+\subsection{Cause}
+
+This is caused by the serviceProvider.config file not being found.  When the config file is loaded, it sets the values for various properties.  The null folder is the result of the config file not being found.  This is probably because the build path is not including the resources directory.
+
+\subsection{How to Fix}
+
+See the instruction in the Eclipse chapter, and the section titled "Configuration".
+
+\chapter{Specifications for Liturgical Day Properties}
+
+Paul: you do not need to use Neo4j with liturgical and biblical data for this project.
+
+You will initially do all your work in a single file: ioc.liturgical.ws.models.ws.response.LiturgicalDayPropertiesForm.java.
+
+Please read on...
+
+The web service is complex.  I have stubbed out most of what you need.  You can complete it and use it as an example to study.  Then I will give you more to work on.  There is a lot we can do with the Liturgical Day Properties as a service to the community worldwide.
+
+\section{To Study First}
+
+\subsection{Trying out the LiturgicalDayProperties}
+
+If you go to /src/main/test/java/delete.me, there is a file called RunMeToGetLiturgicalProperties.java.  Run this, which will call the main method, and display various things.  Please familiarize yourself with this file as your first step.  The REST API provides information from the LiturgicalDayProperties class, and RunMeToGetLiturgicalProperties demonstrates how to instantiate and use the LiturgicalDayProperties class.
+
+\subsection{Liturgical Day Properties Class}
+
+Take a look at the class and familiarize yourself with the methods it exposes.  You will be calling them.  
+
+\section{Endpoints}
+
+The following REST API endpoint will be exposed:
+
+\begin{enumerate}
+    \item{/ldp/api/v1}
+\end{enumerate}
+
+\section{Authentication and Authorization}
+
+This endpoint does not require authentication or authorization.  Anyone can call it if they know the REST API endpoint and the parameters to set.
+
+\section{Files You Will Work With}
+
+\begin{enumerate}
+    \item{ioc.liturgical.ws.controllers.ldp.LdpController}
+    \item{ioc.liturgical.ws.manager.ldp.LdpManager}
+    \item{ioc.liturgical.ws.ldp.LiturgicalDayProperties}
+    \item{ioc.liturgical.ws.models.ws.response.LiturgicalDayPropertiesForm}
+    \item{ioc.liturgical.ws.models.ResultJsonObjectArray}
+\end{enumerate}
+    
+\subsection{LdpController}
+
+The LdpController has the endpoint handler(s) for the REST api calls.  It, in turn, calls the LdpManager.  The LdpController is responsible for getting the JsonObject for the response, and making the response back to the caller.
+
+\subsection{LdpManager}
+
+The LdpManager is the heavy lifter for handling the response.  The LdpManager uses the query parameters to determne the course of action, instantiates an instance of LiturgicalDayProperties, configures it as needed, then uses it to populate the fields of an instance of the LiturgicalDayPropertiesForm, adds it to the ResultJsonObjectArray, and returns it to the LdpController.
+
+\subsection{ioc.liturgical.ws.ldp.LiturgicalDayProperties}
+
+Do not make any changes to this class.  It comes from AGES Liturgical Workbench.  This class does all the calculations for the liturgical properties of a specified date.
+
+\subsection{LiturgicalDayPropertiesForm}
+
+The LiturgicalDayPropertiesForm has the fields and getters/setters for the information to be returned back to the requestor.  There is an instantiator that accepts a LiturgicalDayProperty instance as a parameter, and will (when you finish it) set all the properties of the form from the parameter. Then, add the form to the ResultJsonObjectArray (see below).
+
+\subsection{ResultJsonObjectArray}
+
+Do not make any changes to this class.  This holds the response that will be sent back to the requestor.  It is capable of holding multiple instances of LiturgicalDayPropertiesForm, but we will start out by returning an array of one instance.
+
+\section{Your Work}
+
+\begin{enumerate}
+    \item{In ioc.liturgical.ws.models.ws.response.LiturgicalDayPropertiesForm, set the properties in the constructor for each property that is exposed.}
+    \item{When you are finished, set the breakpoints at various places and study how the parts work together as a whole.  Once you understand everything that is happening in this first assignment, you will be ready for more assignments.}
+\end{enumerate}
+
+\subsection{Tesing Your Work}
+
+See the instructions above about installing web apps to use with the REST API.
+
+For your work, Paul, use the ioc-liturgical-react demo app.
+
+\vfill
+
+%==========================================
+% GLOSSARY
+%===========================================
+
+\newgeometry{
+top=3.5cm,
+bottom=3.5cm,
+left=3.7cm,
+right=4.7cm,
+columnsep=30pt
+}
+
+\fancyhead[L]{\textsf{\rightmark}} % Top left header
+\fancyhead[R]{\textsf{\leftmark}} % Top right header
+\renewcommand{\headrulewidth}{1.4pt} % Rule under the header
+\fancyfoot[C]{\textbf{\textsf{\thepage}}} % Bottom center footer
+\renewcommand{\footrulewidth}{1.4pt} % Rule under the footer
+\pagestyle{fancy} % Use the custom headers and footers throughout the document
+
+\newcommand{\entry}[4]{\markboth{#1}{#1}\textbf{#1}\ {(#2)}\ \textit{#3}\ $\bullet$\ {#4}}  % Defines the command to print each word on the page, \markboth{}{} prints the first word on the page in the top left header and the last word in the top right
+
+\setlength{\parskip}{5pt}\chapter{Glossary}
+%----------------------------------------------------------------------------------------
+
+%----------------------------------------------------------------------------------------
+%	SECTION A
+%----------------------------------------------------------------------------------------
+\begin{multicols}{2}
+
+\section*{A}
+
+\entry{AGES Initiatives, Inc.}{noun phrase}{}{A not-for-profit organization in the USA, founded by Fr. Seraphim Dedes. See \url{http://www.agesinitiatives.org}.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION B
+%----------------------------------------------------------------------------------------
+
+\section*{B}
+
+%----------------------------------------------------------------------------------------
+%	SECTION C
+%----------------------------------------------------------------------------------------
+
+\section*{C}
+
+\entry{country code}{noun phrase}{}{A two or three character code that identifies a specific country.  The \ltOcmcSystemAcronymn uses codes from the ISO 639-2 Code Table, that can be found at \url{https://en.wikipedia.org/wiki/ISO\textunderscore 3166-1\textunderscore alpha-3}.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION D
+%----------------------------------------------------------------------------------------
+
+\section*{D}
+
+\entry{database}{noun}{OALD}{an organized set of data that is stored in a computer and can be looked at and used in various ways. The phrase 'the database' specifically means the \iocLDb.}
+
+\entry{domain}{noun}{}{The unique identifier of a specific version of text.  A domain has three parts: a language code, a country code, and a realm.  For example, en\textunderscore uk\textunderscore lash uniquely identifies translations by Fr. Ephrem Lash that are in the English language as spoken in the United Kingdom. See \textbf{country code, language code, and realm}.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION E
+%----------------------------------------------------------------------------------------
+
+\section*{E}
+
+%----------------------------------------------------------------------------------------
+%	SECTION F
+%----------------------------------------------------------------------------------------
+
+\section*{F}
+
+%----------------------------------------------------------------------------------------
+%	SECTION G
+%----------------------------------------------------------------------------------------
+
+\section*{G}
+
+%----------------------------------------------------------------------------------------
+%	SECTION H
+%----------------------------------------------------------------------------------------
+
+\section*{H}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION I
+%----------------------------------------------------------------------------------------
+
+\section*{I}
+
+\entry{id}{noun}{}{Short for \emph{identifier}. An id is the unique identifer of a piece of text.  It is made up from a language code, a country code, a realm, a topic, and a key. In the \iocLDbName the parts of the id are separated by a tilde, i.e. ~ .}
+%----------------------------------------------------------------------------------------
+%	SECTION J
+%----------------------------------------------------------------------------------------
+
+\section*{J}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION K
+%----------------------------------------------------------------------------------------
+
+\section*{K}
+
+\entry{key}{noun}{}{A key is the fifth part of an \emph{id}.  For example, there are keys for \emph{Priest} and \emph{Deacon}.  A key by itself does not uniquely identify a text.  It is combined with a language code, country code, realm, and topic.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION L
+%----------------------------------------------------------------------------------------
+
+\section*{L}
+
+\entry{language code}{noun phrase}{}{A two or three character code that identifies a specific language.  The \ltOcmcSystemAcronymn uses codes from the ISO 639-2 Code Table, that can be found at \url{https://en.wikipedia.org/wiki/List\textunderscore of\textunderscore ISO\textunderscore 639-2\textunderscore codes.}}
+
+%----------------------------------------------------------------------------------------
+%	SECTION M
+%----------------------------------------------------------------------------------------
+
+\section*{M}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION N
+%----------------------------------------------------------------------------------------
+
+\section*{N}
+
+\entry{Neo4j}{noun}{}{1) A graph database written in the Java language and used as the database management system for \iocLDb. 2) The company that created and manages the Neo4j database management system.}
+
+\entry{node}{noun}{Neo4j}{a data record within a data graph; contains an arbitrary collection of properties. Nodes may have zero, one, or more labels and are optionally connected by relationships. Similar to vertex.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION O
+%----------------------------------------------------------------------------------------
+
+\section*{O}
+
+\entry{OALD}{acronymn}{}{Oxford Advanced Learner's Dictionary.  If a definition in this glossary comes from the OALD, it will be indicated by use of the acronym.}
+
+\entry{OCMC}{acronymn}{}{Orthodox Christian Mission Center.  See \url{www.ocmc.org}.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION P
+%----------------------------------------------------------------------------------------
+
+\section*{P}
+
+\entry{property}{noun}{Neo4j}{named value stored in a node or relationship. Synonym for attribute.}
+
+\entry{property graph}{noun phrase}{Neo4j}{a graph having directed, typed relationships. Each node or relationship may have zero or more associated properties.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION Q
+%----------------------------------------------------------------------------------------
+
+\section*{Q}
+
+%----------------------------------------------------------------------------------------
+%	SECTION R
+%----------------------------------------------------------------------------------------
+
+\section*{R}
+
+\entry{realm}{noun}{}{An acronymn or a name that together with a language code and country code uniquely identifies a version of the text.  For example, en\textunderscore uk\textunderscore lash uniquely identifies translations by Fr. Ephrem Lash.  Another example of a realm is \emph{oak}, which is an acronymn for the Orthodox Archdiocese of Kenya. See \textbf{domain}.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION S
+%----------------------------------------------------------------------------------------
+
+\section*{S}
+
+%----------------------------------------------------------------------------------------
+%	SECTION T
+%----------------------------------------------------------------------------------------
+
+\section*{T}
+
+\entry{topic}{noun}{}{A topic is the fourth part of an \emph{id} and is a word that groups together keys.  For example, the keys \emph{Priest}, \emph{Deacon}, etc. all all grouped together in the \emph{actors} topic.  This allows the system or people to quickly find keys that are related to one another.}
+
+%----------------------------------------------------------------------------------------
+%	SECTION U
+%----------------------------------------------------------------------------------------
+
+\section*{U}
+
+
+%----------------------------------------------------------------------------------------
+%	SECTION V
+%----------------------------------------------------------------------------------------
+
+\section*{V}
+
+%----------------------------------------------------------------------------------------
+%	SECTION W
+%----------------------------------------------------------------------------------------
+
+\section*{W}
+
+%----------------------------------------------------------------------------------------
+%	SECTION X
+%----------------------------------------------------------------------------------------
+
+\section*{X}
+
+%----------------------------------------------------------------------------------------
+%	SECTION Y
+%----------------------------------------------------------------------------------------
+
+\section*{Y}
+
+%----------------------------------------------------------------------------------------
+%	SECTION Z
+%----------------------------------------------------------------------------------------
+
+\section*{Z}
+
+
+\end{multicols}
+\parskip=0pt plus 1pt
+\restoregeometry
+\pagebreak
+
+%----------------------------------------------------------------------------------------
+%	INDEX
+%----------------------------------------------------------------------------------------
+
+\cleardoublepage
+\phantomsection
+\setlength{\columnsep}{0.75cm}
+\addcontentsline{toc}{chapter}{\textcolor{ocre}{Index}}
+\printindex
+
+%----------------------------------------------------------------------------------------
+\end{document}
